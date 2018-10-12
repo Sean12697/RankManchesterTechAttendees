@@ -1,4 +1,5 @@
 body {
+    background-color: #edf0f4;
     text-align: center;
     padding: 20px;
 }
@@ -21,12 +22,33 @@ input {
     font-family: 'Raleway', serif;
 }
 
+a {
+    text-decoration: none;
+}
+
 details {
+    max-width: 800px;
+}
+
+summary {
+    background-color: white;
     margin: 20px 0px;
+    height: 60px;
+}
+
+summary p {
+    display: inline-block;
+    padding: auto 0px;
+}
+
+summary a {
+    font-size: 1.15em;
 }
 
 li {
-    margin: 5px 0px;
+    background-color: white;
+    margin: 10px 0px;
+    padding: 5px;
 }
 
 .loader {
