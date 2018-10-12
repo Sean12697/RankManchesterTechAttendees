@@ -1,0 +1,59 @@
+body {
+    text-align: center;
+    padding: 20px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+    font-family: 'Poiret One', cursive;
+}
+
+p,
+a,
+li,
+small,
+details,
+summary,
+input {
+    font-family: 'Raleway', serif;
+}
+
+details {
+    margin: 20px 0px;
+}
+
+li {
+    margin: 5px 0px;
+}
+
+.loader {
+    border: 8px solid white;
+    border-radius: 50%;
+    border-top: 8px solid gray;
+    width: 60px;
+    height: 60px;
+    -webkit-animation: spin 1s linear infinite;
+    animation: spin 1s linear infinite;
+    margin: 30px auto;
+}
+
+@-webkit-keyframes spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+    100% {
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
