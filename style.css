@@ -26,10 +26,6 @@ a {
     text-decoration: none;
 }
 
-details {
-    max-width: 800px;
-}
-
 summary {
     background-color: white;
     margin: 20px 0px;
