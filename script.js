@@ -79,7 +79,7 @@ function display(people) {
     holder.innerHTML = "";
     for (var i = 0; i < 50 && i < people.length; i++) {
         var element = '<details><summary><p>#' + (i + 1) + ' <a href="https://www.meetup.com/members/' + people[i].id + '" target="_blank">' + people[i].name + '</a> (' + people[i].count + ') </p></summary><ol>';
-            for (var meetup = people[i].events.length - 1; meetup > 0; meetup--) {
+            for (var meetup = people[i].events.length - 1; meetup >= 0; meetup--) {
                 element += '<li><a href="https://www.meetup.com/' + people[i].events[meetup].group_url + '/events/' + people[i].events[meetup].id + '" target="_blank">' + people[i].events[meetup].name + '</a> ' + date(people[i].events[meetup].time) + '</li>';
             } element += '</ol></details>';
         holder.innerHTML += element;
