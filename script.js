@@ -8,7 +8,7 @@ function init() {
     // Getting the date to recieve events past
     var date = new Date();
     date.setFullYear(date.getFullYear() - 1);
-    since = date.toISOString().replace('Z',''); // Needed due to the different format that JavaScript produces nd the Meetup API accepts
+    since = date.toISOString().replace('Z', ''); // Needed due to the different format that JavaScript produces nd the Meetup API accepts
     getEvents();
 }
 
@@ -41,7 +41,7 @@ function getAtendees(events) {
             attendees = attendees.filter(function (event) {
                 return !event.hasOwnProperty("errors");
             }); // removing events with no wanted attendees
-            attendees = attendees.reduce((prev, curr) => [...prev, ...curr], []); 
+            attendees = attendees.reduce((prev, curr) => [...prev, ...curr], []);
             // only get people attending
             attendees = attendees.filter(function (event) {
                 return event.response == "yes";
@@ -53,23 +53,42 @@ function getAtendees(events) {
 
 function buildJSON(attendees) {
     var people = [];
-    
+
     for (var i = 0; i < attendees.length; i++) { // Going over every attendee
         var id = attendees[i].member.id.toString();
         if (people.hasOwnProperty(id)) { // if attendee is in people array
             people[id].count++;
         } else { // new attendee in people array
-            people[id] = {'count': 1, 
-                          'name': attendees[i].member.name,
-                          'id': id,
-                          'events': [] };
+            people[id] = {
+                'count': 1,
+                'name': attendees[i].member.name,
+                'id': id,
+                'events': [],
+                'groups': []
+            };
         } // adding event to person
-        people[id].events.push({ 'name': attendees[i].event.name, 'group_name': attendees[i].group.name, 'group_url': attendees[i].group.urlname, id: attendees[i].event.id.toString(), 'time': attendees[i].event.time });
+        people[id].events.push({
+            'name': attendees[i].event.name,
+            'group_name': attendees[i].group.name,
+            'group_url': attendees[i].group.urlname,
+            id: attendees[i].event.id.toString(),
+            'time': attendees[i].event.time
+        });
+        // Counting groups attended
+        if (hasGroup(people[id].groups, attendees[i].group.name)) {
+            people[id].groups[groupIndex(people[id].groups, attendees[i].group.name)].count++;
+        } else {
+            people[id].groups.push({ // if the state was false, being it doesn't exist in the array
+                'url': attendees[i].group.urlname,
+                'name': attendees[i].group.name,
+                'count': 1
+            });
+        }
     }
-    
+
     // sort
     people = people.sort((a, b) => b.count - a.count);
-    
+
     console.log(people);
     display(people);
 }
@@ -78,19 +97,62 @@ function display(people) {
     var holder = document.getElementById('events');
     holder.innerHTML = "";
     for (var i = 0; i < 50 && i < people.length; i++) {
-        var element = '<details><summary><p>#' + (i + 1) + ' <a href="https://www.meetup.com/members/' + people[i].id + '" target="_blank">' + people[i].name + '</a> (' + people[i].count + ') </p></summary><ol>';
-            for (var meetup = people[i].events.length - 1; meetup >= 0; meetup--) {
-                element += '<li><a href="https://www.meetup.com/' + people[i].events[meetup].group_url + '/events/' + people[i].events[meetup].id + '" target="_blank">' + people[i].events[meetup].name + '</a> ' + date(people[i].events[meetup].time) + '</li>';
-            } element += '</ol></details>';
-        holder.innerHTML += element;
+        var eventsHTML = "", groupsHTML = "";
+        for (var meetup = people[i].events.length - 1; meetup >= 0; meetup--) {
+            eventsHTML += renderEvent(people[i].events[meetup].group_url, people[i].events[meetup].id, people[i].events[meetup].name, date(people[i].events[meetup].time));
+        }
+        people[i].groups = people[i].groups.sort((a, b) => b.count - a.count);
+        for (var group = 0; group < people[i].groups.length; group++) {
+            groupsHTML += renderGroup(people[i].groups[group].url, people[i].groups[group].name, people[i].groups[group].count);
+        }
+        var personInnerHTML = renderDropdown("Groups (" + people[i].groups.length + ")", renderList(groupsHTML)) + renderDropdown("Meetups (" + people[i].count + ")", renderList(eventsHTML));
+        holder.innerHTML += renderPerson((i + 1), people[i].id, people[i].name, people[i].groups.length + " | " + people[i].count, personInnerHTML);
     }
+}
+
+// COMPONENT FUNCTIONS
+
+function renderDropdown(title, content) {
+    return '<details><summary><p>' + title + '</p></summary>' + content + '</details>';
+}
+
+function renderPerson(rank, meetupID, name, count, innerHTML) {
+    return renderDropdown('#' + rank + ' <a href="https://www.meetup.com/members/' + meetupID + '" target="_blank">' + name + '</a> (' + count + ')', '<ol>' + innerHTML + '</ol>');
+}
+
+function renderEvent(groupURL, eventID, eventName, time) {
+    return '<li><a href="https://www.meetup.com/' + groupURL + '/events/' + eventID + '" target="_blank">' + eventName + '</a> ' + time + '</li>';
+}
+
+function renderGroup(groupURL, groupName, count) {
+    return '<li><a href="https://www.meetup.com/' + groupURL + '" target="_blank">' + groupName + '</a> (' + count + ')</li>';
+}
+
+function renderList(event) {
+    return '<ol>' + event + '</ol>';
+}
+
+// OTHER FUNCTIONS
+
+function hasGroup(groups, name) {
+    if (groups.length == 0) {
+        return false;
+    } else {
+        for (var i = 0; i < groups.length; i++) if (groups[i].name.includes(name)) return true; return false;
+    }
+}
+
+function groupIndex(groups, name) {
+    for (var i = 0; i < groups.length; i++) if (groups[i].name.includes(name)) return i;
 }
 
 function date(time) {
     var date = new Date(time);
-    return  ("0" + date.getDate().toString()).substr(-2) + "/" + ("0" + (date.getMonth() + 1).toString()).substr(-2) + "/" + (date.getFullYear().toString()).substr(2);
-    
+    return ("0" + date.getDate().toString()).substr(-2) + "/" + ("0" + (date.getMonth() + 1).toString()).substr(-2) + "/" + (date.getFullYear().toString()).substr(2);
+
 }
+
+// API CALLS
 
 app.apiGetEvents = (meetup) => $.ajax({
     url: 'https://api.meetup.com/' + meetup + '/events?&status=past&no_earlier_than=' + since,
