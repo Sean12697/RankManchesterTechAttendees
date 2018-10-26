@@ -32,7 +32,7 @@ summary {
     height: 60px;
 }
 
-summary p {
+summary * {
     display: inline-block;
     padding: auto 0px;
 }
@@ -45,6 +45,10 @@ li {
     background-color: white;
     margin: 10px 0px;
     padding: 5px;
+}
+
+ol {
+    padding-inline-start: 20px;
 }
 
 .loader {

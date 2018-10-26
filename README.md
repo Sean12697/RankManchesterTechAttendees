@@ -38,7 +38,7 @@ for (var i = 0; i < 50 && i < people.length; i++) {
 
 How I have inserted items is through a lazy method, in which I use the `innerHTML` property of an element to add a string of HTML I build based on the JSON Object I create.
 
-This JSON Object is the `people` varible passed into the `display` function, the format is as follows:
+This JSON Object is the `people` varible passed into the `display` function, which then uses 'render' functions I have made in the JavaScript, the format for the JSON is as follows:
 
 ```json
 [{
@@ -53,21 +53,15 @@ This JSON Object is the `people` varible passed into the `display` function, the
         time: 1508178600000
     }, {
         ...
+    }],
+    groups: [{
+        count: 10,
+        name: "Tech for Good Live",
+        url: "Tech-for-Good-Live"
+    }, {
+        ...
     }]
 }, {
     ...
 }]
 ```
-
-With this the following two lines are where the HTML String blocks are generated and inserted:
-
-
-```javascript
-var element = '<details><summary><p>#' + (i + 1) + ' <a href="https://www.meetup.com/members/' + people[i].id + '" target="_blank">' + people[i].name + '</a> (' + people[i].count + ') </p></summary><ol>';
-```
-
-```javascript
-element += '<li><a href="https://www.meetup.com/' + people[i].events[meetup].group_url + '/events/' + people[i].events[meetup].id + '" target="_blank">' + people[i].events[meetup].name + '</a> ' + date(people[i].events[meetup].time) + '</li>';
-```
-
-The `date` function used (`date(people[i].events[meetup].time)`) simply takes an epoc timestamp and returns a string in the dd/mm/yy format.

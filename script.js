@@ -96,16 +96,29 @@ function buildJSON(attendees) {
 function display(people) {
     var holder = document.getElementById('events');
     holder.innerHTML = "";
+    // Building Each Person HTML Element
     for (var i = 0; i < 50 && i < people.length; i++) {
         var eventsHTML = "", groupsHTML = "";
-        for (var meetup = people[i].events.length - 1; meetup >= 0; meetup--) {
-            eventsHTML += renderEvent(people[i].events[meetup].group_url, people[i].events[meetup].id, people[i].events[meetup].name, date(people[i].events[meetup].time));
-        }
+
+        // Building Each Person's Events HTML Element
+        // Reversing since they are in order from oldest to newest
+        people[i].events.reverse().forEach(e => {
+            eventsHTML += renderEventWithGroup(e.group_url, e.id, e.name, e.group_name, date(e.time));
+        });
+
+        // Building Each Person's Groups HTML Element
         people[i].groups = people[i].groups.sort((a, b) => b.count - a.count);
         for (var group = 0; group < people[i].groups.length; group++) {
-            groupsHTML += renderGroup(people[i].groups[group].url, people[i].groups[group].name, people[i].groups[group].count);
-        }
-        var personInnerHTML = renderDropdown("Groups (" + people[i].groups.length + ")", renderList(groupsHTML)) + renderDropdown("Meetups (" + people[i].count + ")", renderList(eventsHTML));
+            var groupEventsHTML = "";
+
+            // Building Each Person's Groups Events HTML Element
+            people[i].events.filter(e => e.group_url.includes(people[i].groups[group].url)).forEach(ge => {
+                groupEventsHTML += renderEvent(ge.group_url, ge.id, ge.name, date(ge.time));
+            });
+
+            // Using HTML Strings Built to insert the finished Elements
+            groupsHTML += renderDropdown(renderGroup(people[i].groups[group].url, people[i].groups[group].name, people[i].groups[group].count), renderList(groupEventsHTML));
+        } var personInnerHTML = renderDropdown("Groups (" + people[i].groups.length + ")", renderList(groupsHTML)) + renderDropdown("Meetups (" + people[i].count + ")", renderList(eventsHTML));
         holder.innerHTML += renderPerson((i + 1), people[i].id, people[i].name, people[i].groups.length + " | " + people[i].count, personInnerHTML);
     }
 }
@@ -120,8 +133,12 @@ function renderPerson(rank, meetupID, name, count, innerHTML) {
     return renderDropdown('#' + rank + ' <a href="https://www.meetup.com/members/' + meetupID + '" target="_blank">' + name + '</a> (' + count + ')', '<ol>' + innerHTML + '</ol>');
 }
 
+function renderEventWithGroup(groupURL, eventID, eventName, groupName, time) {
+    return '<li><a href="https://www.meetup.com/' + groupURL + '/events/' + eventID + '" target="_blank">' + shorternText(eventName) + '</a> (<a href="https://www.meetup.com/' + groupURL + '" target="_blank">' + shorternText(groupName) + '</a>) ' + time + '</li>';
+}
+
 function renderEvent(groupURL, eventID, eventName, time) {
-    return '<li><a href="https://www.meetup.com/' + groupURL + '/events/' + eventID + '" target="_blank">' + eventName + '</a> ' + time + '</li>';
+    return '<li><a href="https://www.meetup.com/' + groupURL + '/events/' + eventID + '" target="_blank">' + shorternText(eventName) + '</a> ' + time + '</li>';
 }
 
 function renderGroup(groupURL, groupName, count) {
@@ -133,6 +150,10 @@ function renderList(event) {
 }
 
 // OTHER FUNCTIONS
+
+function shorternText(t) {
+    return (t.length > 32) ? t.substr(0, 30) + "..." : t;
+}
 
 function hasGroup(groups, name) {
     if (groups.length == 0) {
